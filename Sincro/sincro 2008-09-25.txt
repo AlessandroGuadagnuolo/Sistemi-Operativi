@@ -1,0 +1,92 @@
+var:
+
+	prof_in_attesa : int (:=0)
+	tesisti_in_attesa : int (:=0)
+	utente : semaforo generico (:=0)
+	computer : semaforo generico (:=15)
+	computer_tesi : semaforo generico (:=5)
+	semaforo_tess, semaforo_stud: semaforo binario (:=1)
+	mutex,mutex2,sem_pc_tesi : semaforo binario(:=1)
+	flag_pc_tesi : int (:=0)
+tutor()
+begin
+	repeat
+		wait(utente)
+		wait(mutex_pc_tesi)
+		if (flag_pc_tesi==0) then
+			wait(computer)
+		else
+			wait(computer_tesi)
+			flag_pc_tesi==0
+		endif
+		signal(mutex_pc_tesi)
+		signal(permesso)	
+	until
+end
+
+
+professori()
+begin
+	i=0
+	k=rand()
+	repeat
+		wait(mutex)
+		prof_in_attesa++
+		if(prof_in_attesa==1)
+			wait(semaforo_tess)
+		signal(mutex)
+		signal(utente)
+		wait(permesso)
+		usa pc
+		wait(mutex)
+		prof_in_attesa--
+		if(prof_in_attesa==0)
+			signal(semaforo_tess)
+		signal(mutex)
+		lascia pc
+		signal(computer)
+	until(i<k)
+end
+
+tesisti()
+begin
+	i=0
+	k=rand()
+	repeat
+		wait(semaforo_tess)
+		wait(mutex2)
+		tesista_in_attesa++
+		if(tesista_in_attesa==1)
+			wait(semaforo_stud)
+		signal(mutex2)
+		wait(mutex_pc_tesi)
+		flag_pc_tesi=1
+		signal(mutex_pc_tesi)
+		signal(utente)
+		wait(permesso)
+		usa pc
+		wait(mutex2)
+		tesista_in_attesa--
+		if(tesista_in_attesa==0)
+			signal(semaforo_stud)
+		signal(mutex2)
+		lascia pc
+		signal(computer_tesi)
+		signal(semaforo_tess)
+	until(i<k)
+end
+
+studenti()
+begin
+	i=0
+	k=rand()
+	repeat
+		wait(semaforo_stud)
+		signal(utente)
+		wait(permesso)
+		usa pc
+		lascia pc
+		signal(computer)
+		signal(semaforo_stud)
+	until(i<k)
+end

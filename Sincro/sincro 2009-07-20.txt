@@ -1,0 +1,102 @@
+def carne_maiale 0
+def carne_pollo 1
+def patatine 2
+def insalata 3
+
+def maiale&insalata 4
+def pollo&insalata 5
+def pollo&patatine 6
+
+var :
+	buffer1 : array di item 
+	buffer2 : array di item 
+	buffer3 : array di item 
+	scaffale1pieno : semaforo generico (:=0)
+	scaffale2pieno : semaforo generico (:=0)
+	scaffale3pieno : semaforo generico (:=0)
+	scaffale1vuoto : semaforo generico (:=10)
+	scaffale2vuoto : semaforo generico (:=10)
+	scaffale3vuoto : semaforo generico (:=10)
+	contatore1,contatore2,contatore3 : int (:=0)
+	mutex1,mutex2,mutex3 : semaforo binario (:=1)
+	int ingr[4]={200,300,300,400}
+
+cuoco()
+repeat
+	
+	if (ingr[0]>0 && ingr[3]>0 && contatore1<10) then	//panino con carne di maiale ed insalata
+		wait(scaffale1vuoto)
+		prepara panino
+		ingr[0]--
+		ingr[3]--
+		wait(mutex1)
+		contatore1 = contatore1 + 1
+		buffer1[contatore1] = panino
+		signal(mutex1)
+		signal(scaffale1pieno)
+	end if
+
+	if (ingr[1]>0 && ingr[3]>0 && contatore2<10) then	//panino con carne di pollo ed insalata
+		wait(scaffale2vuoto)
+		prepara panino
+		ingr[1]--
+		ingr[3]--
+		wait(mutex2) 
+		contatore2 = contatore2 + 1
+		buffer2[contatore2] = panino
+		signal(mutex2)
+		signal(scaffale2pieno)
+	end if
+
+	if (ingr[1]>0 && ingr[2]>0 && contatore3<10) then	//panino con carne di pollo e patatine
+		wait(scaffale3vuoto)
+		prepara panino
+		ingr[1]--
+		ingr[2]--
+		wait(mutex3) 
+		contatore3 = contatore3 + 1
+		buffer3[contatore3] = panino
+		signal(mutex3)
+		signal(scaffale3pieno)
+	end if
+
+forever
+
+
+addetto_vendite()
+repeat
+	ordine=4+rand()%2  //numeri da 4 a 6 per generare un ordine casuale
+	if (ordine==4) then
+		wait(scaffale1pieno)
+		wait(mutex1)
+		panino=buffer1[contatore1]
+		consegna panino
+		contatore1 = contatore1 - 1
+		signal(mutex1)
+		signal(scaffale1vuoto)
+	end if
+	if (ordine==5) then
+		wait(scaffale2pieno)
+		wait(mutex2)
+		panino=buffer2[contatore2]
+		consegna panino
+		contatore2 = contatore2 - 1
+		signal(mutex2)
+		signal(scaffale2vuoto)
+	end if
+	if (ordine==6) then
+		wait(scaffale3pieno)
+		wait(mutex3)
+		panino=buffer3[contatore3]
+		consegna panino
+		contatore3 = contatore3 -1
+		signal(mutex3)
+		signal(scaffale3vuoto)
+	end if
+forever
+
+
+
+
+
+

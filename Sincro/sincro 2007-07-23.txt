@@ -1,0 +1,66 @@
+def M 10
+
+var:
+	pre_vuote : semaforo generico (:=M)
+	post_vuote : semaforo generico (:=K)
+	post_piene : semaforo generico (:=0)
+	pre_piene : semaforo generico (:=0)
+	mutex,mutex2 : semaforo binario (:=1)
+	buffer1[0...M-1] : array di item (:=0)
+	buffer2[0...K-1] : array di item (:=0)
+	piastrella : item
+	flag : int (:=0)
+
+forno()
+begin
+	repeat
+		wait(pre_piene)
+		wait(mutex)
+		rimuovi un elemento da buffer1
+		signal(mutex)
+		signal(pre_vuote)
+		cuoci piastrella
+		wait(post_vuote)
+		wait(mutex2)
+		sforna piastrella in buffer2
+		signal(mutex2)
+		signal(post_piene)
+	forever
+end
+
+
+operaio_preparatore()
+begin
+	repeat
+		piastrella=prepara piastrella
+		wait(pre_vuote)
+		wait(mutex)
+		inserisci piastrella nel buffer1
+		signal(mutex)
+		signal(pre_piene)
+	forever
+end
+
+
+operaio_decoratore()
+begin
+	repeat
+		i=rand()%1
+		if (i==0 || flag==1) then
+			flag=1
+			wait(post_piene)
+			wait(post_piene)
+			wait(mutex2)
+			rimuovi un elemento da buffer2
+			signal(mutex2)
+			signal(post_vuote)
+			signal(post_vuote)
+		else if (i==1)
+			wait(post_piene)
+			wait(mutex2)
+			rimuovi un elemento da buffer2
+			signal(mutex2)
+			signal(post_vuote)
+		end if
+	forever
+end

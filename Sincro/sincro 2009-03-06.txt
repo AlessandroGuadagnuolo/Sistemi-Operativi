@@ -1,0 +1,70 @@
+def A 0
+def B 1
+def X 19
+def Y 20
+var:
+	servizio_A : semaforo generico (:=0)
+	servizio_B : semaforo generico (:=0)
+	ticket_A[100],ticket_B[100] : array di semafori binari(:=0)
+	mutex_A,mutex_B : semaforo binario (:=1)
+	conta_A,conta_B : int (:=0)
+	next_ticket_A,next_ticket_B : int (:=1)
+	uscita_A,uscita_B : semaforo generico (:=0)
+
+sportello_A(int n)
+begin
+	repeat
+		wait(servizio_A)
+		signal(ticket_A[next_ticket_A])
+		servi cliente
+		wait(uscita_A)
+		next_ticket_A++
+		chiama cliente successivo
+	forever
+end
+
+
+
+sportello_B(int m)
+begin
+	repeat
+		wait(servizio_B)
+		signal(ticket_B[next_ticket_B])
+		servi cliente
+		wait(uscita_B)
+		next_ticket_B++
+		chiama cliente successivo
+	forever
+end
+
+
+cliente
+begin
+	i=rand()%1
+	if (i==0 && get_ora_attuale()<X) then
+		wait(mutex_A)
+		preleva numero
+		conta_A++
+		mioticket=conta_A
+		signal(mutex_A)
+		signal(servizio_A)
+		wait(ticket_A[mioticket])
+		avvicinati allo sportello
+		esci dalla posta
+		signal(uscita_A)
+
+	else if (i==1 && get_ora_attuale()<Y)
+		wait(mutex_B)
+		preleva numero
+		conta_B++
+		mioticket=conta_A
+		signal(mutex_B)
+		signal(servizio_B)
+		wait(ticket_B[mioticket])
+		avvicinati allo sportello
+		esci dalla posta
+		signal(uscita_B)
+	endif
+
+
+end

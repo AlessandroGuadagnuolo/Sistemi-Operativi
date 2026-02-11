@@ -1,0 +1,64 @@
+def B1 4
+def B2 6
+
+var :
+	buffer_acqua : semaforo generico (:=0)
+	buffer_vino : semaforo generico (:=0)
+	tavolo_vuoto : semaforo generico (:=B1+B2)
+	tavolo_pieno : semagoro generico (:=0)
+	mutex : semaforo binario (:=1)
+	acqua,vino : int (:=0)
+
+operatore_di_sala()
+begin
+	repeat
+		wait(tavolo_vuoto)
+		wait(mutex)
+		if (acqua<B1) then
+		prox_bottiglia=prende bottiglia da frigo
+		acqua++
+		signal(mutex)
+		signal(buffer_acqua)
+		endif
+		signal(tavolo_pieno)
+
+		wait(mutex)
+		if (vino<B2) then
+		prox_bottiglia=prende bottiglia da frigo
+		vino++
+		signal(mutex)
+		signal(buffer_vino)
+		endif
+		signal(tavolo_pieno)
+
+	forever
+end
+
+
+
+
+
+tavolo()
+begin
+	repeat
+		wait(tavolo_pieno)
+		aov=rand()%1
+		wait(mutex)
+		if (aov==0) then
+			wait(buffer_acqua)
+			consuma bottiglia di acqua
+			acqua--
+		else
+			wait(buffer_vino)
+			consuma bottiglia di vino
+			vino--
+		end if
+		signal(mutex)
+		signal(tavolo_vuoto)
+	forever
+end
+
+
+
+
+

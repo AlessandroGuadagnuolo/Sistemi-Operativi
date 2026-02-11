@@ -1,0 +1,56 @@
+Problema:
+Un servizio di pool-car ha a disposizione N automobili, ognuna assegnata ad una zona della città. Gli utenti del servizio si recano al punto di partenza e prenotano un posto sull'automobile per la zona desiderata. Ogni automobile ha a disposizione M posti. Una volta occupati gli M posti, il veicolo parte per la zona stabilita. Nel caso in cui sia trascorso un tempo T, a partire dalla prima prenotazione per una detemrminata zona, il veicolo parte per la zona assegnata. Nel caso in cui non ci siano più posti disponibili su un veicolo, gli utenti in eccesso si mettono in attesa della prossima corsa per la zona desiderata.
+
+
+
+var:
+	struct {		//usata per far si che ogni auto abbia i suoi semafori
+		posti : semaforo generico (:=m)	//posti liberi sull auto
+		time : int (:=0)	//tempo trascorso
+		contatore : int (:=0)	//contatore di persone salite sull auto
+		partenza : semaforo binario (:=0)    //semaforo usato per far partire l'auto
+		prova_partenza : semaforo binario (:=0) //semaforo usato per provare a far partire l'auto
+		mutex : semaforo binario (:=1)	// semaforo mutex per la mutua esclusione
+		arrivo : semaforo binario (:=0)	//semaforo che indica l'arrivo
+		pronto : semaforo binario (:=0)	//semaforo che serve per indicare che la macchina è disponibile.
+						Senza questo semaforo nel caso la macchina partirebbe per causa TEMPO
+						i clienti prenoterebbero lo stesso i posti.
+	}auto;
+auto car[n];
+
+
+utente(zona)
+wait(car[zona].pronto)
+wait(car[zona].posti)
+wait(car[zona].mutex)
+car[zona].contatore=(car[zona].contatore + 1)mod m;
+signal(car[zona].prova_partenza)
+signal(car[zona].mutex)
+wait(car[zona].partenza)
+viaggio
+wait(car[zona].arrivo)
+lascia la macchina
+
+
+
+automobile(zona)
+repeat
+	repeat
+		signal(car[zona].pronto)
+		wait(car[zona].prova_partenza)
+		wait(car[zona].mutex)
+		if (car[zona].contatore == 1) then
+			start timer
+		end if
+		posti_occupati=car[zona].contantore
+		signal(car[zona].mutex)	
+	until (posti_occupati < M && car[zona].time < T)
+	signal(car[zona].partenza)
+	fai la corsa
+	signal(car[zona].arrivo)
+	torna al punto di partenza
+	for (i=1 a i<=posti_occupati)
+	begin
+		signal(car[zona].posti)
+	end for
+forever

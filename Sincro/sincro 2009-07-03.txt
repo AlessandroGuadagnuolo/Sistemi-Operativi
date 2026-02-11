@@ -1,0 +1,39 @@
+def tabacco 0
+def cartine 1
+def filtro 2
+def fiammiferi 3
+
+var :
+	bancone[4] : array di int (:=0)
+	bancone_pronto : semaforo binario (:=0)
+	bancone_libero : semaforo binario (:=0)
+	elementi{100,120,80,130} : var int
+
+tabaccaio()
+repeat
+	i=0
+	repeat
+		j=rand%3
+		if (bancone[j]==0) then
+			bancone[j]=1
+			i++
+			elementi[j]--
+		end if
+	until (i<3)
+	signal(bancone_pronto)
+	wait(bancone_libero)
+until ( elementi[0]>0 && elementi[1]>0 && elementi[2]>0 && elementi[3]>0)
+
+
+
+fumatore(elem)
+repeat
+	wait(bancone_pronto)
+	if (bancone[elem]==1) then
+		signal(bancone_pronto)
+	else
+		preleva elementi dal bancone
+		fuma
+		signal(bancone_libero)
+	endif
+forever
